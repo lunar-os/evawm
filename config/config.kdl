@@ -1,0 +1,376 @@
+// evawm default config
+//
+// This file is intentionally system-agnostic. There are no monitor names,
+// refresh rates, split includes, theme hooks, or machine-specific commands.
+// Everything has a sensible default; uncomment what you want to change.
+//
+// `Mod` is Super (or Alt with `--nested-mod alt`). Key and modifier names are
+// case-insensitive.
+//
+// Saving this file reloads it live (within about half a second) without
+// restarting EvaWM. Add a manual bind if you want one:
+//
+// Mod+Shift+R { reload-config; }
+//
+// Unknown sections/options are ignored with a warning. Add `strict true` at
+// the top level to make them fatal instead.
+//
+// Files can be split with `include "path.kdl"`. Paths are relative to the
+// including file. Includes are parsed in order, so later values win.
+
+// strict true
+// include "local.kdl"
+
+// Commands to run once at startup.
+//
+// startup {
+//     spawn "swaybg" "-i" "/path/to/wallpaper.png" "-m" "fill"
+//     spawn-sh "wl-paste --type text --watch cliphist store"
+// }
+
+// Optional monitor overrides. Use connector names from your session, e.g.
+// "DP-1". Scale is fixed at 1 for now; position is in logical pixels.
+//
+// output "DP-1" {
+//     mode "1920x1080@165"
+//     transform "normal"
+//     position x=0 y=0
+// }
+//
+// output "HDMI-A-1" {
+//     mode "1920x1080@75"
+//     transform "180"
+//     position x=1920 y=0
+//     // off
+// }
+
+input {
+    keyboard {
+        // XKB layout settings. Empty fields fall back to system defaults /
+        // XKB_DEFAULT_* environment variables. Changes reload live.
+        // xkb {
+        //     layout "us"
+        //     // variant ""
+        //     // model ""
+        //     // rules ""
+        //     // options "caps:escape"
+        // }
+
+        // repeat-delay is in milliseconds; repeat-rate is repeats per second
+        // (0 disables repeat).
+        repeat-delay 250
+        repeat-rate 25
+    }
+
+    cursor {
+        // Empty uses $XCURSOR_THEME, then "default".
+        // Set this explicitly (e.g. "plan9") to override the environment.
+        theme ""
+        size 24
+    }
+
+    mouse {
+        // "flat" disables velocity-based acceleration. "adaptive" enables it.
+        // accel-speed is -1.0 (slowest) to 1.0 (fastest).
+        accel-profile "flat"
+        accel-speed 0.0
+
+        // Optional mouse buttons for canvas pan and Mod-free move/resize drags.
+        // Values: "none" (default, leaves buttons free for apps), "back"
+        // (BTN_SIDE / mouse4), "forward" (BTN_EXTRA / mouse5), or "middle".
+        // Mod+LMB (move), Mod+RMB (resize), and Mod+Shift+LMB (pan) always work.
+        pan-button "none"
+        mod-button "none"
+    }
+
+    touchpad {
+        tap
+        natural-scroll
+
+        // Also supported: left-handed, accel-speed, accel-profile.
+    }
+
+    // Focus the window under the pointer, separately per mode.
+    focus-follows-mouse {
+        scroll true
+        canvas true
+    }
+}
+
+xwayland {
+    // Pre-bind the X11 sockets and start xwayland-satellite on the first X11
+    // connection. Defaults to enabled; if the binary is missing or does not
+    // support -listenfd, EvaWM warns and continues without X11.
+    enabled true
+}
+
+layout {
+    // Space around and between windows, in logical pixels.
+    gaps 8
+
+    // Border drawn around every tiled window, inside the gap. The window
+    // content is inset by the total border width, so gaps stay exact.
+    // Borders scale with the window-open animation and follow keyboard
+    // resizes with constant ring thickness.
+    inner-border {
+        width 3
+        active-color "#ffffff"
+        inactive-color "#505050"
+    }
+
+    // Outer border drawn immediately outside the inner border.
+    // Width 0 disables it. Both rings are configurable independently.
+    outer-border {
+        width 3
+        active-color "#b4b4b4"
+        inactive-color "#2a2a2a"
+    }
+
+    // Behind the windows. A layer-shell wallpaper may cover this.
+    background-color "#000000"
+
+    // Mode for newly created workspaces: "scroll" (default) or "canvas".
+    default-mode "scroll"
+
+    default-column-width { proportion 0.5; }
+
+    canvas {
+        // Both modes remember their own layout. Moving a window in canvas does
+        // not change its scroll position, and vice versa. On switching, the
+        // focused window stays focused and the camera moves to it; closed
+        // windows are gone from both. A window new to a mode is seeded once.
+
+        // Keyboard camera pan distance, in logical pixels.
+        pan-step 200
+
+        // Keyboard window move distance, in logical pixels.
+        move-step 40
+
+        // Size of new windows opened in canvas mode, as a fraction of the
+        // working area. 0.55 x 0.60 is wider and shorter than a scroll column.
+        new-window-width 0.55
+        new-window-height 0.60
+
+        // Where new canvas windows open:
+        //   "center"          - center of the current view (default)
+        //   "cursor-center"   - centered under the cursor (clamped to view)
+        //   "cursor-top-left" - top-left corner at the cursor (clamped to view)
+        new-window-position "center"
+    }
+
+    overview {
+        // Zoomed-out scale while Overview is open (0.1..0.95).
+        zoom 0.5
+    }
+}
+
+animations {
+    // Uncomment to disable every animation (individual blocks also accept `off`).
+    // off
+
+    // Global speed multiplier. Above 1 is slower, below 1 faster.
+    slowdown 1.0
+
+    // Each animation is either a spring or an easing:
+    //   spring damping-ratio=0.8 stiffness=900 epsilon=0.0007
+    //   duration-ms 150
+    //   curve "ease-out-cubic"
+    //
+    // damping-ratio < 1 bounces, 1.0 is critically damped.
+    // Curves: linear, ease-in-out, ease-out-quad, ease-out-cubic,
+    // ease-out-expo, ease-out-back, ease-in-out-back, or
+    // cubic-bezier x1 y1 x2 y2.
+
+    // Camera movement when focus/windows change columns.
+    view-movement {
+        spring damping-ratio=0.9 stiffness=900 epsilon=0.0007
+    }
+
+    // Column/window movement, stack reorder, and drag/drop transitions.
+    window-movement {
+        spring damping-ratio=0.82 stiffness=900 epsilon=0.0007
+    }
+
+    // Smooths each committed size step during a live resize. The client keeps
+    // reflowing live; this interpolates between committed sizes.
+    window-resize {
+        spring damping-ratio=1.0 stiffness=800 epsilon=0.0005
+    }
+
+    // Opening: spring overshoots slightly in scale; opacity clamps to 1.
+    window-open {
+        spring damping-ratio=0.72 stiffness=800 epsilon=0.001
+        scale-from 0.9
+        opacity-from 0.0
+        // Easing alternative:
+        // duration-ms 150
+        // curve "ease-out-back"
+    }
+
+    // Close animation: whole-tile snapshot fade/shrink.
+    window-close {
+        duration-ms 120
+        curve "ease-out-quad"
+        scale-to 0.92
+    }
+
+    // Overview zoom in/out animation.
+    overview {
+        spring damping-ratio=0.9 stiffness=900 epsilon=0.0007
+    }
+}
+
+binds {
+    // Applications
+
+    Mod+Return { spawn "foot"; }
+    Mod+A      { spawn "fuzzel"; }
+    Mod+Q      { close-window; }
+    Mod+Shift+E { quit; }
+
+    // Focus
+    //
+    // Both modes: focus the next window/column in that direction inside the
+    // current workspace. Scroll uses column/tile order; canvas uses the
+    // nearest window by geometry.
+    //
+    // Mod+Ctrl always switches monitors, in both modes.
+
+    // Left/Right move between columns; Up/Down move between stacked windows
+    // inside a column. HJKL follows standard vim directions.
+    Mod+Left  { focus-column-left; }
+    Mod+Down  { focus-window-down; }
+    Mod+Up    { focus-window-up; }
+    Mod+Right { focus-column-right; }
+    Mod+H     { focus-column-left; }
+    Mod+J     { focus-window-down; }
+    Mod+K     { focus-window-up; }
+    Mod+L     { focus-column-right; }
+
+    Mod+Home { focus-column-first; }
+    Mod+End  { focus-column-last; }
+
+    Mod+Ctrl+Left  { focus-monitor-left; }
+    Mod+Ctrl+Down  { focus-monitor-down; }
+    Mod+Ctrl+Up    { focus-monitor-up; }
+    Mod+Ctrl+Right { focus-monitor-right; }
+    Mod+Ctrl+H     { focus-monitor-left; }
+    Mod+Ctrl+J     { focus-monitor-down; }
+    Mod+Ctrl+K     { focus-monitor-up; }
+    Mod+Ctrl+L     { focus-monitor-right; }
+
+    // Cycle through windows in the active workspace in most-recently-used order.
+    Mod+Tab       { cycle-window "next"; }
+    Mod+Shift+Tab { cycle-window "previous"; }
+
+    // Move
+    //
+    // Scroll: move the column/window. Mod+Shift+1..9 moves the active window
+    // (not the whole column) to another workspace.
+    // Canvas: nudge the window by `layout.canvas move-step`.
+    // Mod+Ctrl+Shift moves the focused window to the adjacent monitor.
+
+    Mod+Shift+Left  { move-window-left; }
+    Mod+Shift+Down  { move-window-down; }
+    Mod+Shift+Up    { move-window-up; }
+    Mod+Shift+Right { move-window-right; }
+    Mod+Shift+H     { move-window-left; }
+    Mod+Shift+J     { move-window-down; }
+    Mod+Shift+K     { move-window-up; }
+    Mod+Shift+L     { move-window-right; }
+
+    // Horizontal column moves use Mod+Alt+Shift so Mod+Shift matches pointer
+    // drags (move the window, not the whole column).
+    Mod+Alt+Shift+Left  { move-column-left; }
+    Mod+Alt+Shift+Right { move-column-right; }
+    Mod+Alt+Shift+H     { move-column-left; }
+    Mod+Alt+Shift+L     { move-column-right; }
+
+    Mod+Shift+Home { move-column-to-first; }
+    Mod+Shift+End  { move-column-to-last; }
+
+    Mod+Ctrl+Shift+Left  { move-to-monitor-left; }
+    Mod+Ctrl+Shift+Down  { move-to-monitor-down; }
+    Mod+Ctrl+Shift+Up    { move-to-monitor-up; }
+    Mod+Ctrl+Shift+Right { move-to-monitor-right; }
+    Mod+Ctrl+Shift+H     { move-to-monitor-left; }
+    Mod+Ctrl+Shift+J     { move-to-monitor-down; }
+    Mod+Ctrl+Shift+K     { move-to-monitor-up; }
+    Mod+Ctrl+Shift+L     { move-to-monitor-right; }
+
+    // Resize
+    //
+    // Same keys as niri: width with Mod+Minus/Equal, height with Shift.
+    // In Scroll mode these resize the column/window. In Canvas mode they
+    // resize the focused window by the bound percentage.
+
+    Mod+Minus { resize-width "-10%"; }
+    Mod+Equal { resize-width "+10%"; }
+    Mod+Shift+Minus { resize-height "-10%"; }
+    Mod+Shift+Equal { resize-height "+10%"; }
+
+    // Layout
+
+    Mod+BracketLeft  { consume-or-expel-window-left; }
+    Mod+BracketRight { consume-or-expel-window-right; }
+    Mod+F            { maximize-column; }
+    // Fill the width left after keeping fully visible neighbours on screen.
+    // Press again to restore the previous column width.
+    Mod+Ctrl+F       { expand-column-to-available-width; }
+    // Center the active column. At the first/last column this may expose
+    // intentional empty space instead of clamping to the work area edge.
+    Mod+C            { center-column; }
+    // Fullscreen the focused window; press again to restore its tile.
+    Mod+Shift+Return { fullscreen-window; }
+
+    // Workspaces
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+
+    Mod+Shift+1 { move-window-to-workspace 1; }
+    Mod+Shift+2 { move-window-to-workspace 2; }
+    Mod+Shift+3 { move-window-to-workspace 3; }
+    Mod+Shift+4 { move-window-to-workspace 4; }
+    Mod+Shift+5 { move-window-to-workspace 5; }
+    Mod+Shift+6 { move-window-to-workspace 6; }
+    Mod+Shift+7 { move-window-to-workspace 7; }
+    Mod+Shift+8 { move-window-to-workspace 8; }
+    Mod+Shift+9 { move-window-to-workspace 9; }
+
+    // Canvas & Overview
+
+    // Toggle this workspace between scroll and canvas.
+    Mod+B { toggle-canvas; }
+
+    // Toggle zoomed-out overview across all monitors.
+    Mod+O { toggle-overview; }
+
+    // Keyboard camera pan by `layout.canvas pan-step`.
+    // Only meaningful in Canvas mode.
+    Mod+Alt+Left  { pan-camera "left"; }
+    Mod+Alt+Right { pan-camera "right"; }
+    Mod+Alt+Up    { pan-camera "up"; }
+    Mod+Alt+Down  { pan-camera "down"; }
+
+    // Return the camera to the centered workspace origin.
+    Mod+Alt+Home { home-canvas; }
+}
+
+// Mouse gestures are built in and do not use the binds table:
+//
+//   Mod + left-drag            move the focused window
+//   Mod + right-drag           resize the focused window
+//   mod-button + drag          same as Mod + drag
+//   pan-button + left-drag     pan the camera in canvas mode
+//   Mod + Shift + left-drag    pan the camera in canvas mode
+//
+// "Mod" is Super. The side-button mod and pan button are
+// `input.mouse mod-button` and `input.mouse pan-button`.

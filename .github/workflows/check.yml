@@ -1,0 +1,89 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Bootstrap git
+        run: pacman -Syu --noconfirm --needed archlinux-keyring git
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          pacman -S --noconfirm --needed \
+            base-devel \
+            rustup \
+            pkgconf \
+            seatd \
+            libinput \
+            mesa \
+            libglvnd \
+            libdrm \
+            wayland \
+            wayland-protocols \
+            libxkbcommon \
+            libx11 \
+            libxcursor \
+            libxrandr \
+            libxi \
+            systemd-libs
+          rustup default stable
+          rustup component add rustfmt clippy
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - name: Run checks
+        run: make check-all
+
+      - name: Test session-only build (no nested/winit)
+        run: cargo test --locked --no-default-features
+
+  msrv:
+    name: MSRV (1.88)
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Bootstrap git
+        run: pacman -Syu --noconfirm --needed archlinux-keyring git
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          pacman -S --noconfirm --needed \
+            base-devel \
+            rustup \
+            pkgconf \
+            seatd \
+            libinput \
+            mesa \
+            libglvnd \
+            libdrm \
+            wayland \
+            wayland-protocols \
+            libxkbcommon \
+            libx11 \
+            libxcursor \
+            libxrandr \
+            libxi \
+            systemd-libs
+          rustup toolchain install 1.88 --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+      - name: Check MSRV
+        run: |
+          cargo +1.88 check --locked --all-targets
+          cargo +1.88 check --locked --no-default-features --all-targets

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=EvaWM
+Comment=A Smithay compositor with scrolling and an infinite canvas
+Exec=evawm-session
+Type=Application
+DesktopNames=evawm

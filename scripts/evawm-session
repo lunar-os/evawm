@@ -1,0 +1,18 @@
+#!/bin/sh
+# EvaWM session entry point for display managers such as Ly.
+set -eu
+
+export XDG_CURRENT_DESKTOP=evawm
+export XDG_SESSION_TYPE=wayland
+
+log="${EVAWM_LOG:-${XDG_STATE_HOME:-$HOME/.local/state}/evawm.log}"
+mkdir -p "$(dirname "$log")"
+if [ -f "$log" ]; then
+  mv -f "$log" "$log.prev"
+fi
+printf '=== %s evawm-session start bin=%s ===\n' \
+  "$(date '+%Y-%m-%dT%H:%M:%S%z')" "${EVAWM_BIN:-evawm}" >"$log"
+
+# EvaWM sets WAYLAND_DISPLAY and refreshes the systemd/D-Bus activation
+# environment itself once its socket exists.
+exec "${EVAWM_BIN:-evawm}" --session "$@" >>"$log" 2>&1
